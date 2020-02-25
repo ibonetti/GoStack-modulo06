@@ -25,6 +25,7 @@ export default class User extends Component {
   static propTypes = {
     navigation: PropTypes.shape({
       getParam: PropTypes.func,
+      navigate: PropTypes.func,
     }).isRequired,
   };
 
@@ -48,11 +49,23 @@ export default class User extends Component {
     this.loadStarred();
   }
 
-  loadNextStarred = async () => {
+  loadNextStarred = async ({ distanceFromEnd }) => {
     const { page } = this.state;
-    console.tron.log(`end reched ${page}`);
-    this.setState({ page: page + 1 });
+    console.tron.log(`next ${distanceFromEnd}`);
+    if (distanceFromEnd > 0) {
+      this.setState({ page: page + 1 });
+      this.loadStarred();
+    }
+  };
+
+  refreshList = async () => {
+    this.setState({ page: 1 });
     this.loadStarred();
+  };
+
+  handleNavigate = repo => {
+    const { navigation } = this.props;
+    navigation.navigate('Repository', { repo });
   };
 
   render() {
@@ -74,9 +87,10 @@ export default class User extends Component {
             keyExtractor={star => String(star.id)}
             onEndReachedThreshold={0.2}
             onEndReached={this.loadNextStarred}
+            onRefresh={this.refreshList}
             refreshing={loading}
             renderItem={({ item }) => (
-              <Starred>
+              <Starred onPress={() => this.handleNavigate(item)}>
                 <OwnerAvatar source={{ uri: item.owner.avatar_url }} />
                 <Info>
                   <Title>{item.name}</Title>
